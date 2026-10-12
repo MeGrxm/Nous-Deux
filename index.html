@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Nous deux</title>
+<meta name="theme-color" content="#FBF7F2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151210" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Nous deux">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Chargement -->
+<div id="screen-loading" class="screen center"><div class="spinner" aria-label="Chargement"></div></div>
+
+<!-- Configuration manquante -->
+<div id="screen-setup" class="screen center" hidden>
+  <div class="card narrow">
+    <img class="logo" src="icons/icon.svg" alt="">
+    <h1 class="brand">Presque prêt</h1>
+    <p class="muted">Il reste à coller la configuration Firebase dans <code>config.js</code>. Toutes les étapes sont dans <code>LISEZMOI.md</code>.</p>
+  </div>
+</div>
+
+<!-- Connexion -->
+<div id="screen-login" class="screen center" hidden>
+  <form id="login-form" class="card narrow" novalidate>
+    <img class="logo" src="icons/icon.svg" alt="">
+    <h1 class="brand">Nous deux</h1>
+    <p class="muted">Nos listes, à deux.</p>
+    <label class="field"><span>E-mail</span><input type="email" id="login-email" autocomplete="username" inputmode="email" required></label>
+    <label class="field"><span>Mot de passe</span><input type="password" id="login-pass" autocomplete="current-password" required></label>
+    <p class="form-error" id="login-error" hidden></p>
+    <button class="btn primary block" type="submit" id="login-btn">Se connecter</button>
+    <button class="link" type="button" id="forgot">Mot de passe oublié ?</button>
+  </form>
+</div>
+
+<!-- Accès refusé -->
+<div id="screen-denied" class="screen center" hidden>
+  <div class="card narrow">
+    <h1 class="brand">Accès refusé</h1>
+    <p class="muted">Ce compte n’est pas autorisé. Vérifiez que son adresse figure bien dans les règles Firestore (étape 4 du LISEZMOI.md).</p>
+    <button class="btn block" id="denied-logout">Se déconnecter</button>
+  </div>
+</div>
+
+<!-- Appli -->
+<div id="screen-app" class="screen app" hidden>
+  <header class="top">
+    <div class="top-row">
+      <h1 class="brand">Nous deux</h1>
+      <div class="duo" id="duo"></div>
+      <button class="icon-btn" id="open-settings" aria-label="Réglages">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+    <nav class="chips" id="lists" aria-label="Listes"></nav>
+  </header>
+
+  <main class="main" id="main">
+    <div class="list-head">
+      <h2 id="list-title"></h2>
+      <button class="icon-btn" id="edit-list" aria-label="Modifier la liste">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+      </button>
+    </div>
+    <ul class="tasks" id="todo"></ul>
+    <div class="empty" id="empty" hidden>
+      <div class="empty-mark">✓</div>
+      <p>Rien à faire ici.<br><span class="muted">Profitez-en.</span></p>
+    </div>
+    <section class="done" id="done-section" hidden>
+      <button class="done-toggle" id="done-toggle" aria-expanded="false">
+        <span id="done-count"></span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <ul class="tasks" id="done-list" hidden></ul>
+      <button class="link danger-link" id="clear-done" hidden>Effacer les tâches faites</button>
+    </section>
+  </main>
+
+  <form id="composer" class="composer" autocomplete="off">
+    <div class="composer-inner">
+      <div class="composer-opts">
+        <label class="opt-date" id="opt-date">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>
+          <span id="due-label">Date</span>
+          <input type="date" id="due-input" aria-label="Date de la tâche">
+        </label>
+        <button type="button" class="due-clear" id="due-clear" aria-label="Retirer la date" hidden>✕</button>
+        <span class="opt-sep">Pour</span>
+        <div class="seg" id="for-seg"></div>
+      </div>
+      <div class="composer-row">
+        <input id="new-task" placeholder="Ajouter…" maxlength="200" enterkeyhint="done">
+        <button class="send" type="submit" id="send" aria-label="Ajouter">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<dialog id="sheet" class="sheet"><div class="sheet-inner" id="sheet-body"></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"><span id="toast-msg"></span><button id="toast-action" class="toast-action" hidden></button></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
