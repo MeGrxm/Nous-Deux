@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- Politique de sécurité : seuls les scripts de l'appli et de Firebase peuvent s'exécuter,
+     et l'appli ne peut contacter que Google (Firebase) et ntfy. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.googleapis.com https://ntfy.sh https://www.gstatic.com https://*.workers.dev; frame-src https://*.firebaseapp.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
 <title>Nous deux</title>
 <meta name="theme-color" content="#FBF7F2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#151210" media="(prefers-color-scheme: dark)">
@@ -37,7 +41,7 @@
   <form id="login-form" class="card narrow" novalidate>
     <img class="logo" src="icons/icon.svg" alt="">
     <h1 class="brand">Nous deux</h1>
-    <p class="muted">Nos listes, à deux.</p>
+    <p class="muted">Nos listes et notre agenda, à deux.</p>
     <label class="field"><span>E-mail</span><input type="email" id="login-email" autocomplete="username" inputmode="email" required></label>
     <label class="field"><span>Mot de passe</span><input type="password" id="login-pass" autocomplete="current-password" required></label>
     <p class="form-error" id="login-error" hidden></p>
@@ -61,16 +65,31 @@
     <div class="top-row">
       <h1 class="brand">Nous deux</h1>
       <div class="duo" id="duo"></div>
+      <button class="icon-btn" id="open-stats" aria-label="Bilan de la semaine">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+      </button>
       <button class="icon-btn" id="open-settings" aria-label="Réglages">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
     </div>
-    <nav class="chips" id="lists" aria-label="Listes"></nav>
+    <div class="views" id="views" role="tablist">
+      <button type="button" data-view="lists" role="tab">Listes</button>
+      <button type="button" data-view="agenda" role="tab">Agenda</button>
+    </div>
+    <nav class="chips" id="lists" data-only="lists" aria-label="Listes"></nav>
+    <div class="cal-nav" data-only="agenda">
+      <button class="icon-btn" id="cal-prev" aria-label="Mois précédent"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+      <h2 id="cal-month"></h2>
+      <button class="icon-btn" id="cal-next" aria-label="Mois suivant"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+      <button class="today-btn" id="cal-today">Aujourd’hui</button>
+    </div>
   </header>
 
-  <main class="main" id="main">
+  <!-- Vue Listes -->
+  <main class="main" id="main" data-only="lists">
     <div class="list-head">
       <h2 id="list-title"></h2>
+      <button class="draw-btn" id="draw" hidden>🎲 Tirer au sort</button>
       <button class="icon-btn" id="edit-list" aria-label="Modifier la liste">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
       </button>
@@ -90,15 +109,38 @@
     </section>
   </main>
 
-  <form id="composer" class="composer" autocomplete="off">
+  <!-- Vue Agenda -->
+  <main class="main" id="agenda" data-only="agenda" hidden>
+    <div class="seg cal-filter" id="cal-filter"></div>
+    <div class="cal" id="cal-grid"></div>
+    <h3 class="day-title" id="day-title"></h3>
+    <ul class="events" id="day-events"></ul>
+    <p class="day-empty muted" id="day-empty" hidden>Rien de prévu ce jour-là.</p>
+    <div id="day-tasks"></div>
+  </main>
+
+  <form id="composer" class="composer" autocomplete="off" data-only="lists">
     <div class="composer-inner">
-      <div class="composer-opts">
-        <label class="opt-date" id="opt-date">
+      <div class="composer-opts" id="opts-shop" hidden>
+        <span class="opt-sep">Rayon</span>
+        <select class="opt-select" id="aisle-input" aria-label="Rayon"></select>
+      </div>
+      <div class="composer-opts" id="opts-wish" hidden>
+        <div class="seg" id="cat-seg"></div>
+      </div>
+      <div class="composer-opts" id="opts-todo">
+        <label class="opt-pill" id="opt-date">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>
           <span id="due-label">Date</span>
           <input type="date" id="due-input" aria-label="Date de la tâche">
         </label>
         <button type="button" class="due-clear" id="due-clear" aria-label="Retirer la date" hidden>✕</button>
+        <label class="opt-pill" id="opt-time" hidden>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span id="time-label">Rappel</span>
+          <input type="time" id="time-input" aria-label="Heure du rappel">
+        </label>
+        <button type="button" class="due-clear" id="time-clear" aria-label="Retirer le rappel" hidden>✕</button>
         <span class="opt-sep">Pour</span>
         <div class="seg" id="for-seg"></div>
       </div>
@@ -110,6 +152,15 @@
       </div>
     </div>
   </form>
+
+  <div class="bottom-bar" data-only="agenda" hidden>
+    <div class="composer-inner">
+      <button class="btn primary block" id="add-event">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Ajouter un événement
+      </button>
+    </div>
+  </div>
 </div>
 
 <dialog id="sheet" class="sheet"><div class="sheet-inner" id="sheet-body"></div></dialog>

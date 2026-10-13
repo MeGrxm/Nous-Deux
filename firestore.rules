@@ -1,16 +1,83 @@
 rules_version = '2';
 
-// Seuls vos deux comptes peuvent lire et écrire.
-// Remplacez les deux adresses par celles créées dans
+// Seuls vos deux comptes ont accès. Tout ce qui n'est pas listé ici est refusé.
+// Remplacez les deux adresses (en minuscules) par celles créées dans
 // Firebase > Authentication > Utilisateurs.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null
+
+    function isCouple() {
+      return request.auth != null
         && request.auth.token.email in [
           'premier.email@exemple.com',
           'second.email@exemple.com'
         ];
+    }
+
+    // Compte « robot » du service calendrier (facultatif) : lit l'agenda, gère la synchro Google.
+    // On l'identifie par son UID (Authentication > Utilisateurs, colonne « UID utilisateur »),
+    // qu'il est impossible de s'attribuer. Sans service calendrier, laissez la ligne telle quelle.
+    function isRobot() {
+      return request.auth != null
+        && request.auth.uid == 'REMPLACER_PAR_UID_DU_ROBOT';
+    }
+
+    // Profils : chacun lit les deux, mais ne peut modifier que le sien.
+    match /users/{uid} {
+      allow read: if isCouple() || isRobot();
+      allow write: if isCouple() && request.auth.uid == uid;
+    }
+
+    // Listes : nom de 1 à 40 caractères.
+    match /lists/{id} {
+      allow read, delete: if isCouple();
+      allow create, update: if isCouple()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 40;
+    }
+
+    // Tâches : texte de 1 à 200 caractères.
+    match /tasks/{id} {
+      allow read, delete: if isCouple();
+      allow create, update: if isCouple()
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 200;
+    }
+
+    // Agenda : titre de 1 à 80 caractères.
+    match /events/{id} {
+      allow read: if isCouple() || isRobot();
+      allow delete: if isCouple();
+      allow create, update: if isCouple()
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 80;
+    }
+
+    // Suivi des rappels programmés (partagé entre vos deux téléphones).
+    match /sched/{id} {
+      allow read, write: if isCouple();
+    }
+
+    // Réglages partagés (lien secret du calendrier).
+    match /config/{id} {
+      allow read: if isCouple() || isRobot();
+      allow write: if isCouple();
+    }
+
+    // Synchronisation Google Agenda : le robot la gère ; vous pouvez seulement lire son état.
+    // Le jeton Google (chiffré) est dans « secret », lisible par le robot uniquement.
+    match /gsync/{id} {
+      allow read: if isRobot() || (isCouple() && id == 'status');
+      allow write: if isRobot();
+    }
+
+    // Journal des tâches cochées (pour le bilan) : chacun n'écrit que ses propres lignes.
+    match /log/{id} {
+      allow read, delete: if isCouple();
+      allow create: if isCouple() && request.resource.data.by == request.auth.uid;
     }
   }
 }
