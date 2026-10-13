@@ -8,8 +8,8 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.googleapis.com https://ntfy.sh https://www.gstatic.com https://*.workers.dev; frame-src https://*.firebaseapp.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Nous deux</title>
-<meta name="theme-color" content="#FBF7F2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#151210" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F4F2F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#110F24" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -19,7 +19,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,500&family=Inter:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -37,11 +37,39 @@
 </div>
 
 <!-- Connexion -->
-<div id="screen-login" class="screen center" hidden>
+<div id="screen-login" class="screen login" hidden>
+  <div class="cover">
+    <p class="eyebrow">(toi <span aria-hidden="true">⟷</span> moi)</p>
+    <h1 class="cover-title">Nous deux</h1>
+    <svg class="cover-art" viewBox="0 0 332 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="cv-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4E45C8"/><stop offset=".45" stop-color="#8A7FE3"/><stop offset=".78" stop-color="#E7A3B8"/><stop offset="1" stop-color="#F7D9C8"/></linearGradient>
+        <radialGradient id="cv-glow" cx=".5" cy=".86" r=".55"><stop offset="0" stop-color="#FFE7D6" stop-opacity=".95"/><stop offset=".4" stop-color="#F4B7B9" stop-opacity=".45"/><stop offset="1" stop-color="#F4B7B9" stop-opacity="0"/></radialGradient>
+        <radialGradient id="cv-sun"><stop offset=".38" stop-color="#FFF6EE"/><stop offset=".5" stop-color="#FFEBDD" stop-opacity=".8"/><stop offset="1" stop-color="#FFE3D3" stop-opacity="0"/></radialGradient>
+        <filter id="cv-paint" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" result="n"/>
+          <feColorMatrix in="n" type="saturate" values="0" result="g"/>
+          <feComponentTransfer in="g" result="g2"><feFuncA type="table" tableValues="0 .16"/></feComponentTransfer>
+          <feComposite in="g2" in2="SourceGraphic" operator="in" result="grain"/>
+          <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="grain"/></feMerge>
+        </filter>
+        <clipPath id="cv-band"><rect width="332" height="150" rx="8"/></clipPath>
+      </defs>
+      <g clip-path="url(#cv-band)" filter="url(#cv-paint)">
+        <rect width="332" height="150" fill="url(#cv-sky)"/>
+        <rect width="332" height="150" fill="url(#cv-glow)"/>
+        <circle cx="166" cy="120" r="44" fill="url(#cv-sun)"/>
+        <path d="M0 130 C 56 108, 106 120, 156 128 S 266 110, 332 120 V150 H0Z" fill="#7067CF" opacity=".75"/>
+        <path d="M0 142 C 76 128, 136 140, 196 138 S 296 128, 332 136 V150 H0Z" fill="#3E5F8E" opacity=".85"/>
+      </g>
+      <g fill="#FFFFFF"><path class="tw d0" d="M78 28 80 34 86 36 80 38 78 44 76 38 70 36 76 34Z" opacity="0.95"/><path class="tw d1" d="M258 34 259.5 38.5 264 40 259.5 41.5 258 46 256.5 41.5 252 40 256.5 38.5Z" opacity="0.9"/><path class="tw d2" d="M130 61.5 131.125 64.875 134.5 66 131.125 67.125 130 70.5 128.875 67.125 125.5 66 128.875 64.875Z" opacity="0.85"/><path class="tw d3" d="M214 18 215 21 218 22 215 23 214 26 213 23 210 22 213 21Z" opacity="0.8"/><path class="tw d0" d="M36 74.5 36.875 77.125 39.5 78 36.875 78.875 36 81.5 35.125 78.875 32.5 78 35.125 77.125Z" opacity="0.75"/><path class="tw d1" d="M300 79.5 301.125 82.875 304.5 84 301.125 85.125 300 88.5 298.875 85.125 295.5 84 298.875 82.875Z" opacity="0.8"/><path class="tw d2" d="M176 41.2 176.7 43.3 178.8 44 176.7 44.7 176 46.8 175.3 44.7 173.2 44 175.3 43.3Z" opacity="0.7"/><path class="tw d3" d="M108 17.4 108.65 19.35 110.6 20 108.65 20.65 108 22.6 107.35 20.65 105.4 20 107.35 19.35Z" opacity="0.7"/>
+        <circle cx="216" cy="58" r="1.6" opacity=".8"/><circle cx="60" cy="54" r="1.3" opacity=".7"/><circle cx="284" cy="62" r="1.2" opacity=".7"/><circle cx="150" cy="30" r="1.1" opacity=".6"/>
+      </g>
+    </svg>
+    <p class="cover-caption">À deux</p>
+    <p class="cover-sub">Listes / Agenda / Envies</p>
+  </div>
   <form id="login-form" class="card narrow" novalidate>
-    <img class="logo" src="icons/icon.svg" alt="">
-    <h1 class="brand">Nous deux</h1>
-    <p class="muted">Nos listes et notre agenda, à deux.</p>
     <label class="field"><span>E-mail</span><input type="email" id="login-email" autocomplete="username" inputmode="email" required></label>
     <label class="field"><span>Mot de passe</span><input type="password" id="login-pass" autocomplete="current-password" required></label>
     <p class="form-error" id="login-error" hidden></p>
@@ -63,11 +91,11 @@
 <div id="screen-app" class="screen app" hidden>
   <header class="top">
     <div class="top-row">
-      <h1 class="brand">Nous deux</h1>
+      <div class="brand-wrap">
+        <p class="eyebrow" id="today-line"></p>
+        <h1 class="brand">Nous deux<svg class="brand-star" viewBox="0 0 24 24" aria-hidden="true"><path class="tw d0" d="M14 1 16 7 22 9 16 11 14 17 12 11 6 9 12 7Z"/><path class="tw d2" d="M5 15.4 5.9 18.1 8.6 19 5.9 19.9 5 22.6 4.1 19.9 1.4 19 4.1 18.1Z" opacity=".7"/></svg></h1>
+      </div>
       <div class="duo" id="duo"></div>
-      <button class="icon-btn" id="open-stats" aria-label="Bilan de la semaine">
-        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
-      </button>
       <button class="icon-btn" id="open-settings" aria-label="Réglages">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
@@ -88,6 +116,7 @@
   <!-- Vue Listes -->
   <main class="main" id="main" data-only="lists">
     <div class="list-head">
+      <svg class="band-stars" viewBox="0 0 140 90" aria-hidden="true"><g fill="#FFFFFF"><path class="tw d0" d="M98 17 100.25 23.75 107 26 100.25 28.25 98 35 95.75 28.25 89 26 95.75 23.75Z" opacity="0.95"/><path class="tw d1" d="M56 45 57.25 48.75 61 50 57.25 51.25 56 55 54.75 51.25 51 50 54.75 48.75Z" opacity="0.85"/><path class="tw d2" d="M124 56 125 59 128 60 125 61 124 64 123 61 120 60 123 59Z" opacity="0.8"/><path class="tw d3" d="M30 16.5 30.875 19.125 33.5 20 30.875 20.875 30 23.5 29.125 20.875 26.5 20 29.125 19.125Z" opacity="0.75"/><path class="tw d0" d="M80 69.2 80.7 71.3 82.8 72 80.7 72.7 80 74.8 79.3 72.7 77.2 72 79.3 71.3Z" opacity="0.7"/><circle cx="112" cy="40" r="1.4" opacity=".8"/><circle cx="44" cy="74" r="1.2" opacity=".7"/></g></svg>
       <h2 id="list-title"></h2>
       <button class="draw-btn" id="draw" hidden>🎲 Tirer au sort</button>
       <button class="icon-btn" id="edit-list" aria-label="Modifier la liste">
@@ -96,7 +125,7 @@
     </div>
     <ul class="tasks" id="todo"></ul>
     <div class="empty" id="empty" hidden>
-      <div class="empty-mark">✓</div>
+      <div class="empty-mark"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path class="tw d0" fill="currentColor" d="M12 2 14.5 9.5 22 12 14.5 14.5 12 22 9.5 14.5 2 12 9.5 9.5Z"/></svg></div>
       <p>Rien à faire ici.<br><span class="muted">Profitez-en.</span></p>
     </div>
     <section class="done" id="done-section" hidden>

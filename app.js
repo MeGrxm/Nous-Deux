@@ -37,7 +37,7 @@ const REMIND_ALLDAY = [['', 'Aucun'], ['d9', 'Le jour même à 9 h'], ['v18', 'L
 let app, auth, db;
 
 const S = {
-  me: null, users: {}, lists: [], tasks: [], events: [], sched: [], log: [], config: {}, gstatus: null, localDirty: {},
+  me: null, users: {}, lists: [], tasks: [], events: [], sched: [], config: {}, gstatus: null, localDirty: {},
   loaded: {},
   view: storageGet('nd:view') === 'agenda' ? 'agenda' : 'lists',
   current: storageGet('nd:list'),
@@ -285,7 +285,7 @@ function schedulePush(w) {
 
 let reconcileTimer, reconciling = false, reconcileAgain = false;
 function queueReconcile() { clearTimeout(reconcileTimer); reconcileTimer = setTimeout(reconcile, 1200); }
-function allLoaded() { return ['users', 'lists', 'tasks', 'events', 'sched', 'log'].every(k => S.loaded[k]); }
+function allLoaded() { return ['users', 'lists', 'tasks', 'events', 'sched'].every(k => S.loaded[k]); }
 
 async function reconcile() {
   if (!S.me || !allLoaded() || !navigator.onLine) return;
@@ -387,6 +387,7 @@ function renderAll() {
   else renderAgenda();
 }
 function renderDuo() {
+  $('#today-line').textContent = `(${new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })})`;
   $('#duo').innerHTML = people().map(p => `<span class="av p-${toneOf(p.uid)}" title="${esc(p.name)}">${esc(initial(p.name))}</span>`).join('');
 }
 function renderViews() {
@@ -522,26 +523,17 @@ function addTask(text) {
   notifyPartner('task');
 }
 
-function logDone(t) {
-  const ref = doc(collection(db, 'log'));
-  setDoc(ref, { by: S.me.uid, ts: Date.now(), list: t.list }).catch(() => {});
-  return ref.id;
-}
-
 function toggleTask(t) {
   const done = !t.done;
   if (done && t.repeat && t.due) {
     // Tâche récurrente : elle revient à la prochaine date au lieu d'être rangée.
     const next = nextDue(t.due, t.repeat);
-    logDone(t);
-    updateDoc(doc(db, 'tasks', t.id), { due: next, lastDoneBy: S.me.uid, lastDoneTs: Date.now() }).catch(fail);
+    updateDoc(doc(db, 'tasks', t.id), { due: next }).catch(fail);
     toast(`Fait ! Prochaine fois : ${dueLabel(next).toLowerCase()}`);
   } else if (done) {
-    const logId = logDone(t);
-    updateDoc(doc(db, 'tasks', t.id), { done: true, doneBy: S.me.uid, doneTs: Date.now(), logId }).catch(fail);
+    updateDoc(doc(db, 'tasks', t.id), { done: true, doneBy: S.me.uid, doneTs: Date.now() }).catch(fail);
   } else {
-    if (t.logId) deleteDoc(doc(db, 'log', t.logId)).catch(() => {});
-    updateDoc(doc(db, 'tasks', t.id), { done: false, doneBy: null, doneTs: null, logId: null }).catch(fail);
+    updateDoc(doc(db, 'tasks', t.id), { done: false, doneBy: null, doneTs: null }).catch(fail);
   }
   if (done) notifyPartner('done');
 }
@@ -582,7 +574,7 @@ function openEditTask(t) {
     <label class="field"><span>${kind === 'shop' ? 'Article' : kind === 'wish' ? 'Envie' : 'Tâche'}</span><input id="e-text" maxlength="200" value="${esc(t.text)}"></label>
     <label class="field"><span>Liste</span><select id="e-list">${listOpts}</select></label>
     ${fields}
-    <p class="muted small">Ajouté par ${esc(nameOf(t.by))} · ${esc(ago(t.ts))}${t.lastDoneTs ? ` · dernière fois fait par ${esc(nameOf(t.lastDoneBy))} ${esc(ago(t.lastDoneTs))}` : ''}</p>
+    <p class="muted small">Ajouté par ${esc(nameOf(t.by))} · ${esc(ago(t.ts))}</p>
     <div class="sheet-actions">
       <button class="btn danger" data-act="delete">Supprimer</button>
       <button class="btn primary" data-act="save">Enregistrer</button>
@@ -706,57 +698,20 @@ function openDraw(list) {
   });
 }
 
-/* ───────── Bilan de la semaine ───────── */
-function openStats() {
-  let week = 0;
-  const html = () => {
-    const start = addDays(mondayOf(today()), week * 7), end = addDays(start, 7);
-    const t0 = at(start, '00:00'), t1 = at(end, '00:00');
-    const entries = S.log.filter(e => e.ts >= t0 && e.ts < t1);
-    const ps = people();
-    const total = entries.length;
-    const counts = ps.map(p => ({ ...p, n: entries.filter(e => e.by === p.uid).length }));
-    const fmt = d => parseYmd(d).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
-    let verdict = 'Aucune tâche cochée pour l’instant.';
-    if (total) {
-      const [a, b] = [...counts].sort((x, y) => y.n - x.n);
-      verdict = !b || a.n - b.n <= Math.max(1, Math.round(total * 0.15)) ? 'Bel équilibre cette semaine 👏' : `${esc(a.name)} a fait un peu plus cette semaine.`;
+/* ───────── Effacement de l'ancien historique (fonction « Bilan » retirée) ───────── */
+function purgeOldLog() {
+  let unsub = () => {}, done = false;
+  unsub = onSnapshot(collection(db, 'log'), snap => {
+    if (snap.metadata.fromCache || done) return;
+    done = true;
+    setTimeout(() => unsub(), 0);
+    const ids = snap.docs.map(d => d.id);
+    for (let i = 0; i < ids.length; i += 400) {
+      const batch = writeBatch(db);
+      ids.slice(i, i + 400).forEach(id => batch.delete(doc(db, 'log', id)));
+      batch.commit().catch(() => {});
     }
-    const perList = S.lists.map(l => {
-      const es = entries.filter(e => e.list === l.id);
-      if (!es.length) return '';
-      return `<li><span>${esc(listTitle(l))}</span><span class="muted">${ps.map(p => `${esc(p.name)} ${es.filter(e => e.by === p.uid).length}`).join(' · ')}</span></li>`;
-    }).join('');
-    return `
-      <div class="seg" id="st-week">${segHTML(String(week), [['0', 'Cette semaine'], ['-1', 'Semaine dernière']])}</div>
-      <p class="muted small">Du ${fmt(start)} au ${fmt(addDays(end, -1))} · ${plural(total, 'tâche cochée', 'tâches cochées')}</p>
-      <div class="stats">${counts.map(p => `
-        <div class="stat-row">
-          <span class="av p-${toneOf(p.uid)}">${esc(initial(p.name))}</span>
-          <span class="stat-name">${esc(p.name)}</span>
-          <progress class="bar p-${toneOf(p.uid)}" max="${Math.max(total, 1)}" value="${p.n}"></progress>
-          <span class="stat-n">${p.n}</span>
-        </div>`).join('')}</div>
-      <p class="verdict">${verdict}</p>
-      ${perList ? `<h4 class="sub-title">Par liste</h4><ul class="per-list">${perList}</ul>` : ''}`;
-  };
-  openSheet(`<h2 tabindex="-1" autofocus>📊 Bilan</h2><div id="st-body">${html()}</div>
-    <div class="sheet-actions"><button class="btn primary" data-act="close">Fermer</button></div>`, body => {
-    $('#st-body', body).addEventListener('click', e => {
-      const b = e.target.closest('[data-for]'); if (!b) return;
-      week = Number(b.dataset.for); $('#st-body', body).innerHTML = html();
-    });
-    $('[data-act="close"]', body).onclick = closeSheet;
-  });
-}
-
-function cleanupLog() {
-  // On ne garde que 3 mois d'historique.
-  const old = S.log.filter(e => e.ts < Date.now() - 92 * 86400e3).slice(0, 400);
-  if (!old.length) return;
-  const batch = writeBatch(db);
-  old.forEach(e => batch.delete(doc(db, 'log', e.id)));
-  batch.commit().catch(() => {});
+  }, () => { /* rien à effacer ou accès refusé */ });
 }
 
 /* ───────── Vue Agenda ───────── */
@@ -1169,7 +1124,7 @@ function afterSnapshot(name, snap) {
   if (!snap.metadata.fromCache) S.loaded[name] = true;
   renderAll();
   queueReconcile();
-  if (allLoaded() && !S.linkHandled) { S.linkHandled = true; handleDeepLink(); cleanupLog(); }
+  if (allLoaded() && !S.linkHandled) { S.linkHandled = true; handleDeepLink(); purgeOldLog(); }
 }
 
 function startSession(user) {
@@ -1209,7 +1164,7 @@ function startSession(user) {
     refreshGoogleBlock();
   }, () => { /* facultatif */ }));
 
-  for (const name of ['tasks', 'events', 'sched', 'log']) {
+  for (const name of ['tasks', 'events', 'sched']) {
     S.unsubs.push(onSnapshot(collection(db, name), meta, snap => {
       S[name] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       if (name === 'events') watchLocal('events', snap);
@@ -1221,7 +1176,7 @@ function startSession(user) {
 function stopSession() {
   S.unsubs.forEach(u => u());
   Object.assign(S, {
-    unsubs: [], me: null, users: {}, lists: [], tasks: [], events: [], sched: [], log: [], config: {}, gstatus: null, localDirty: {}, loaded: {},
+    unsubs: [], me: null, users: {}, lists: [], tasks: [], events: [], sched: [], config: {}, gstatus: null, localDirty: {}, loaded: {},
     seeded: false, onboardingShown: false, linkHandled: false, showDone: false,
     draft: { due: '', time: '', for: 'both', aisle: 'auto', cat: 'autre' },
   });
@@ -1257,7 +1212,6 @@ function bindUI() {
   });
   $('#denied-logout').addEventListener('click', logout);
   $('#open-settings').addEventListener('click', openSettings);
-  $('#open-stats').addEventListener('click', openStats);
   $('#draw').addEventListener('click', () => { const l = listOf(S.current); if (l) openDraw(l); });
   $('#aisle-input').addEventListener('change', e => { S.draft.aisle = e.target.value; });
   $('#new-task').addEventListener('input', () => { if (listKind(listOf(S.current)) === 'shop' && S.draft.aisle === 'auto') renderComposer(); });
@@ -1329,7 +1283,22 @@ function bindUI() {
 /* ───────── Démarrage ───────── */
 function configured() { return firebaseConfig?.apiKey && !String(firebaseConfig.apiKey).startsWith('REMPLACER'); }
 
+/* Effet de lumière : un halo part de l'endroit touché sur les boutons */
+const LIT = '.btn, .send, .chip, .views button, .seg button, .draw-btn, .opt-pill, .today-btn, .icon-btn';
+function lightUp(e) {
+  const el = e.target.closest?.(LIT);
+  if (!el || el.disabled) return;
+  const r = el.getBoundingClientRect();
+  el.style.setProperty('--gx', `${e.clientX - r.left}px`);
+  el.style.setProperty('--gy', `${e.clientY - r.top}px`);
+  el.classList.remove('is-lit', 'is-swept'); void el.offsetWidth; el.classList.add('is-lit', 'is-swept');
+  clearTimeout(el._lit); clearTimeout(el._swept);
+  el._lit = setTimeout(() => el.classList.remove('is-lit'), 120);       // le halo s'estompe ensuite en douceur
+  el._swept = setTimeout(() => el.classList.remove('is-swept'), 800);   // durée du reflet
+}
+
 function main() {
+  document.addEventListener('pointerdown', lightUp, { passive: true });
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
   if (!configured()) { showScreen('setup'); return; }
   app = initializeApp(firebaseConfig);
