@@ -334,6 +334,9 @@ function showScreen(name) {
 let toastTimer;
 function toast(msg, action) {
   const el = $('#toast'), btn = $('#toast-action');
+  // Une fenêtre ouverte passe au premier plan : le message doit y être placé pour rester visible.
+  const host = sheet.open ? sheet : document.body;
+  if (el.parentElement !== host) host.appendChild(el);
   $('#toast-msg').textContent = msg;
   btn.hidden = !action;
   btn.onclick = null;
@@ -933,7 +936,8 @@ function feedHTML() {
     return `<section class="box" id="s-feed">
       <h3>Calendrier du téléphone</h3>
       <p class="muted small">Facultatif : affiche l’agenda de l’appli dans le Calendrier de vos téléphones (lecture seule). Il faut d’abord installer le petit service Cloudflare décrit dans le guide.</p>
-      <label class="field"><span>Adresse du service</span><input id="s-feed-base" inputmode="url" value="${esc(f.base || '')}" placeholder="https://nous-deux.….workers.dev"></label>
+      <label class="field"><span>Adresse du service</span><input id="s-feed-base" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" value="${esc(f.base || '')}" placeholder="nous-deux.votre-pseudo.workers.dev"></label>
+      <p class="form-error" id="s-feed-err" hidden></p>
       <button class="btn block" data-act="feed-save">Créer les liens d’abonnement</button>
     </section>`;
   }
@@ -1091,12 +1095,17 @@ function openSettings() {
       }
       const act = e.target.closest('[data-act]')?.dataset.act;
       if (act === 'feed-save') {
-        let base = '';
+        const err = $('#s-feed-err', wrap);
+        let raw = $('#s-feed-base', wrap).value.trim().replace(/\s+/g, '');
+        if (raw && !/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)) raw = 'https://' + raw; // « https:// » facultatif
+        let base = '', problem = 'Collez l’adresse du service Cloudflare, par exemple nous-deux.votre-pseudo.workers.dev';
         try {
-          const u = new URL($('#s-feed-base', wrap).value.trim());
-          if (u.protocol === 'https:' && u.hostname.includes('.') && !u.search && !u.hash) base = (u.origin + u.pathname).replace(/\/+$/, '');
+          const u = new URL(raw);
+          if (!/^https?:$/.test(u.protocol)) problem = 'Cette adresse n’est pas une adresse web.';
+          else if (!u.hostname.endsWith('.workers.dev')) problem = 'L’adresse doit se terminer par .workers.dev (celle affichée sur la page de votre Worker chez Cloudflare).';
+          else base = 'https://' + u.hostname;
         } catch { /* adresse illisible */ }
-        if (!base) { toast('Adresse invalide : elle doit commencer par https://'); return; }
+        if (!base) { err.textContent = problem; err.hidden = false; $('#s-feed-base', wrap).focus(); return; }
         saveFeed({ base, token: S.config.feed?.token || genToken() });
         refresh();
       } else if (act === 'feed-edit') {
