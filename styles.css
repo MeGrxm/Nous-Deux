@@ -112,7 +112,7 @@ code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .92em; 
 }
 .field input:focus, .field select:focus { outline: none; border-color: var(--accent); }
 .form-error { margin: 0; color: var(--danger); font-size: 14px; }
-.btn { height: 48px; padding: 0 18px; border-radius: 12px; font-weight: 600; background: var(--surface-2); }
+.btn { height: 48px; padding: 0 14px; border-radius: 12px; font-weight: 600; background: var(--surface-2); white-space: nowrap; }
 .btn.small { height: 40px; padding: 0 14px; font-size: 14px; }
 .btn.primary { color: var(--on-accent); }
 .btn.danger { color: var(--danger); }
@@ -332,7 +332,7 @@ dialog.sheet::backdrop { background: rgba(24, 20, 60, .5); }
 
 /* Agenda */
 .cal-nav { display: flex; align-items: center; gap: 4px; margin-top: 10px; }
-.cal-nav h2 { font-family: var(--display); font-style: italic; font-weight: 500; font-size: 24px; margin: 0 auto 0 4px; order: -1; text-transform: capitalize; }
+.cal-nav h2 { font-family: var(--display); font-style: italic; font-weight: 500; font-size: clamp(20px, 6.2vw, 24px); white-space: nowrap; margin: 0 auto 0 4px; order: -1; text-transform: capitalize; }
 .today-btn { height: 32px; padding: 0 12px; border-radius: 999px; background: var(--surface-2); font-size: 13px; font-weight: 600; color: var(--ink-2); }
 .cal-filter { margin: 12px 0 10px; }
 .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 6px; }
@@ -371,6 +371,7 @@ dialog.sheet::backdrop { background: rgba(24, 20, 60, .5); }
 .ev-time { flex: none; width: 52px; display: flex; flex-direction: column; font-variant-numeric: tabular-nums; }
 .ev-start { font-weight: 600; font-size: 15px; }
 .ev-end { font-size: 13px; color: var(--ink-2); }
+.ev-allday { font-size: 12px; line-height: 20px; white-space: nowrap; }
 .ev-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .ev-title { font-size: 16px; font-weight: 500; overflow-wrap: anywhere; }
 .ev-meta { font-size: 13px; color: var(--ink-2); }
@@ -387,8 +388,8 @@ dialog.sheet::backdrop { background: rgba(24, 20, 60, .5); }
 .bottom-bar .btn { display: flex; align-items: center; justify-content: center; gap: 8px; height: 50px; border-radius: 14px; }
 
 /* Couleurs au choix */
-.swatches { display: flex; flex-wrap: wrap; gap: 10px; }
-.swatch { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--surface); box-shadow: 0 0 0 1px var(--line-2); }
+.swatches { display: grid; grid-template-columns: repeat(8, minmax(0, 36px)); justify-content: space-between; gap: 6px; }
+.swatch { width: 100%; max-width: 36px; aspect-ratio: 1; height: auto; border-radius: 50%; border: 3px solid var(--surface); box-shadow: 0 0 0 1px var(--line-2); }
 .swatch.is-on { box-shadow: 0 0 0 2px var(--ink); }
 .swatch:disabled { opacity: .25; cursor: not-allowed; }
 .sw-corail { background: #D45E3D; } .sw-sauge { background: #4C7A62; } .sw-ocean { background: #2F6FB0; } .sw-lavande { background: #7B5EA7; }
@@ -415,7 +416,7 @@ a.btn { display: flex; align-items: center; justify-content: center; text-decora
 #s-google .btn.primary { color: var(--on-accent); }
 
 /* Écran de connexion : couverture peinte */
-.login { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: calc(28px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)); }
+.login { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; min-height: 100dvh; padding: calc(28px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)); }
 .cover { width: 100%; max-width: 440px; text-align: center; display: flex; flex-direction: column; align-items: center; }
 .cover .eyebrow { color: var(--accent); font-size: 16px; }
 .cover-title {
@@ -424,8 +425,6 @@ a.btn { display: flex; align-items: center; justify-content: center; text-decora
   font-size: clamp(54px, 17vw, 78px); line-height: 1; letter-spacing: -.01em; color: var(--accent);
 }
 .cover-art { width: 100%; height: auto; display: block; margin-bottom: 22px; border-radius: 8px; box-shadow: 0 18px 40px -18px rgba(78, 69, 200, .55); }
-.cover-caption { margin: 0; font-size: 13px; font-weight: 500; letter-spacing: .48em; text-indent: .48em; text-transform: uppercase; color: var(--accent); }
-.cover-sub { margin: 6px 0 0; font-size: 12px; color: var(--ink-2); letter-spacing: .04em; }
 .login .card { padding-top: 22px; }
 .chip.is-on .chip-count { background: var(--on-accent); color: var(--accent); }
 

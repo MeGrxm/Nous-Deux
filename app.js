@@ -716,7 +716,7 @@ function renderAgenda() {
 
 function eventHTML(ev, day) {
   let time;
-  if (ev.allDay) time = '<span class="ev-start">Journée</span>';
+  if (ev.allDay) time = '<span class="ev-start ev-allday">Journée</span>';
   else time = `<span class="ev-start">${esc(ev.start)}</span>${ev.end ? `<span class="ev-end">${esc(ev.end)}${ev.end <= ev.start ? ' +1' : ''}</span>` : ''}`;
   const meta = [`<span class="who ${toneClass(ev.who)}">${esc(nameOf(ev.who))}</span>`];
   if (ev.repeat) meta.push(`🔁 ${esc(labelOf(EVENT_REPEAT, ev.repeat).toLowerCase())}`);
