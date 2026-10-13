@@ -502,5 +502,15 @@ input[type="date"], input[type="time"] {
   -webkit-appearance: none; appearance: none;
   display: block; min-width: 0; max-width: 100%; text-align: left;
 }
-input[type="date"]::-webkit-date-and-time-value, input[type="time"]::-webkit-date-and-time-value { text-align: left; }
+/* iPhone uniquement : la date/l'heure restait collée en haut du champ */
+@supports (-webkit-touch-callout: none) {
+  input[type="date"], input[type="time"] { display: flex; align-items: center; }
+}
+.field input[type="date"], .field input[type="time"] {
+  line-height: 46px;                           /* = hauteur du champ (48 px) moins la bordure */
+  padding-top: 0; padding-bottom: 0;
+}
+input[type="date"]::-webkit-date-and-time-value, input[type="time"]::-webkit-date-and-time-value {
+  text-align: left; margin: 0; padding: 0; line-height: inherit; min-height: 0;
+}
 .field input, .field select, .composer-row input { font-size: 16px; }   /* sous 16 px, l'iPhone zoome sur le champ */
