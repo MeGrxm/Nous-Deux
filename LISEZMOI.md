@@ -174,11 +174,9 @@ C'est tout : plus rien à faire ensuite. Dans les Réglages de l'appli, vous voy
 ## Les autres outils
 
 - **Courses par rayon** : dans une liste de type « Courses », chaque article est rangé automatiquement dans son rayon (fruits et légumes, frais, boissons…), dans l'ordre d'un magasin. Le rayon deviné s'affiche pendant la saisie ; vous pouvez le changer.
-- **Liste d'envies** : dans une liste de type « Envies », chaque idée a une catégorie (resto, film, sortie, voyage, activité) et un lien facultatif. Le bouton **🎲 Tirer au sort** choisit pour vous, avec un filtre par catégorie.
 - **Résumé du matin** : une notification à l'heure choisie (8 h par défaut) avec le nombre de tâches et d'événements du jour. Il ne part pas les jours où rien n'est prévu. Réglable ou désactivable dans les Réglages.
-- **Bilan** (icône graphique en haut) : qui a coché combien de tâches cette semaine et la semaine dernière, au total et par liste. L'historique est gardé 3 mois.
 
-Le type d'une liste (classique, courses ou envies) se choisit en la créant ou en la modifiant (bouton **⋯**).
+Le type d'une liste (classique ou courses) se choisit en la créant ou en la modifiant (bouton **⋯**).
 
 ---
 

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <!-- Politique de sécurité : seuls les scripts de l'appli et de Firebase peuvent s'exécuter,
      et l'appli ne peut contacter que Google (Firebase) et ntfy. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.googleapis.com https://ntfy.sh https://www.gstatic.com https://*.workers.dev; frame-src https://*.firebaseapp.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'">
@@ -67,7 +67,7 @@
       </g>
     </svg>
     <p class="cover-caption">À deux</p>
-    <p class="cover-sub">Listes / Agenda / Envies</p>
+    <p class="cover-sub">Listes / Courses / Agenda</p>
   </div>
   <form id="login-form" class="card narrow" novalidate>
     <label class="field"><span>E-mail</span><input type="email" id="login-email" autocomplete="username" inputmode="email" required></label>
@@ -118,7 +118,6 @@
     <div class="list-head">
       <svg class="band-stars" viewBox="0 0 140 90" aria-hidden="true"><g fill="#FFFFFF"><path class="tw d0" d="M98 17 100.25 23.75 107 26 100.25 28.25 98 35 95.75 28.25 89 26 95.75 23.75Z" opacity="0.95"/><path class="tw d1" d="M56 45 57.25 48.75 61 50 57.25 51.25 56 55 54.75 51.25 51 50 54.75 48.75Z" opacity="0.85"/><path class="tw d2" d="M124 56 125 59 128 60 125 61 124 64 123 61 120 60 123 59Z" opacity="0.8"/><path class="tw d3" d="M30 16.5 30.875 19.125 33.5 20 30.875 20.875 30 23.5 29.125 20.875 26.5 20 29.125 19.125Z" opacity="0.75"/><path class="tw d0" d="M80 69.2 80.7 71.3 82.8 72 80.7 72.7 80 74.8 79.3 72.7 77.2 72 79.3 71.3Z" opacity="0.7"/><circle cx="112" cy="40" r="1.4" opacity=".8"/><circle cx="44" cy="74" r="1.2" opacity=".7"/></g></svg>
       <h2 id="list-title"></h2>
-      <button class="draw-btn" id="draw" hidden>🎲 Tirer au sort</button>
       <button class="icon-btn" id="edit-list" aria-label="Modifier la liste">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
       </button>
@@ -153,9 +152,6 @@
       <div class="composer-opts" id="opts-shop" hidden>
         <span class="opt-sep">Rayon</span>
         <select class="opt-select" id="aisle-input" aria-label="Rayon"></select>
-      </div>
-      <div class="composer-opts" id="opts-wish" hidden>
-        <div class="seg" id="cat-seg"></div>
       </div>
       <div class="composer-opts" id="opts-todo">
         <label class="opt-pill" id="opt-date">

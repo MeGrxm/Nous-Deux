@@ -20,10 +20,8 @@ const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platfo
 const DEFAULT_LISTS = [
   { id: 'a-faire', name: 'À faire', emoji: '🏠', order: 1, kind: 'todo' },
   { id: 'courses', name: 'Courses', emoji: '🛒', order: 2, kind: 'shop' },
-  { id: 'sorties', name: 'Envies & sorties', emoji: '✨', order: 3, kind: 'wish' },
 ];
-const LIST_KINDS = [['todo', 'Liste classique'], ['shop', 'Courses (classées par rayon)'], ['wish', 'Envies (avec tirage au sort)']];
-const WISH_CATS = [['resto', '🍽️', 'Resto'], ['film', '🎬', 'Film / série'], ['sortie', '🎟️', 'Sortie'], ['voyage', '✈️', 'Voyage'], ['activite', '🎨', 'Activité'], ['autre', '✨', 'Autre']];
+const LIST_KINDS = [['todo', 'Liste classique'], ['shop', 'Courses (classées par rayon)']];
 const PALETTE = [
   ['corail', '#D45E3D', 'Corail'], ['sauge', '#4C7A62', 'Sauge'], ['ocean', '#2F6FB0', 'Océan'],
   ['lavande', '#7B5EA7', 'Lavande'], ['framboise', '#C23B6E', 'Framboise'], ['moutarde', '#B7860B', 'Moutarde'],
@@ -42,7 +40,7 @@ const S = {
   view: storageGet('nd:view') === 'agenda' ? 'agenda' : 'lists',
   current: storageGet('nd:list'),
   showDone: false,
-  draft: { due: '', time: '', for: 'both', aisle: 'auto', cat: 'autre' },
+  draft: { due: '', time: '', for: 'both', aisle: 'auto' },
   cal: { month: '', sel: '', filter: 'all' },
   unsubs: [], seeded: false, onboardingShown: false, linkHandled: false,
 };
@@ -146,7 +144,7 @@ function whoOptions() { // agenda : « Moi » d'abord
   return opts;
 }
 function listOf(id) { return S.lists.find(l => l.id === id); }
-function listKind(l) { return l?.kind || (l?.id === 'courses' ? 'shop' : l?.id === 'sorties' ? 'wish' : 'todo'); }
+function listKind(l) { return (l?.kind || (l?.id === 'courses' ? 'shop' : 'todo')) === 'shop' ? 'shop' : 'todo'; }
 function aisleOf(t) { return t.aisle && t.aisle !== 'auto' ? t.aisle : guessAisle(t.text); }
 function mondayOf(d) { return addDays(d, -((dow(d) + 6) % 7)); }
 function plural(n, one, many) { return `${n} ${n > 1 ? many : one}`; }
@@ -425,19 +423,15 @@ function taskHTML(t) {
     if (t.repeat) meta.push(`<span class="pill">🔁 ${esc(labelOf(TASK_REPEAT, t.repeat).toLowerCase())}</span>`);
     if (kind === 'todo' && t.for && t.for !== 'both') meta.push(`<span class="pill pill-for p-${toneOf(t.for)}">Pour ${esc(t.for === S.me.uid ? 'moi' : nameOf(t.for))}</span>`);
   }
-  const url = safeUrl(t.url);
   return `<li class="task ${t.done ? 'is-done' : ''}" data-id="${esc(t.id)}">`
     + `<button class="check" data-action="toggle" aria-label="${t.done ? 'Décocher' : 'Cocher'}">${CHECK_SVG}</button>`
     + `<button class="task-body" data-action="edit"><span class="task-text">${esc(t.text)}</span><span class="task-meta">${meta.join('')}</span></button>`
-    + (url ? `<a class="task-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer" aria-label="Ouvrir le lien">↗</a>` : '')
     + '</li>';
 }
 
 function groupedHTML(items, kind) {
-  const groups = kind === 'shop' ? AISLES : WISH_CATS;
-  const keyOf = kind === 'shop' ? aisleOf : (t => t.cat || 'autre');
-  return groups.map(([k, emoji, label]) => {
-    const its = items.filter(t => keyOf(t) === k);
+  return AISLES.map(([k, emoji, label]) => {
+    const its = items.filter(t => aisleOf(t) === k);
     return its.length ? `<li class="group-head">${emoji} ${esc(label)} <span>${its.length}</span></li>${its.map(taskHTML).join('')}` : '';
   }).join('');
 }
@@ -456,7 +450,6 @@ function renderTasks() {
   const done = inList.filter(t => t.done).sort((a, b) => (b.doneTs || 0) - (a.doneTs || 0));
   const kind = listKind(l);
   $('#todo').innerHTML = kind === 'todo' ? todo.map(taskHTML).join('') : groupedHTML(todo, kind);
-  $('#draw').hidden = kind !== 'wish' || todo.length < 2;
   $('#empty').hidden = todo.length > 0 || !l;
   $('#done-section').hidden = done.length === 0;
   $('#done-count').textContent = `Fait · ${done.length}`;
@@ -469,17 +462,15 @@ function renderTasks() {
 function renderComposer() {
   const l = listOf(S.current);
   const kind = listKind(l);
-  $('#new-task').placeholder = l ? (kind === 'shop' ? 'Ajouter un article…' : kind === 'wish' ? 'Ajouter une envie…' : `Ajouter à ${l.name}…`) : 'Ajouter…';
+  $('#new-task').placeholder = l ? (kind === 'shop' ? 'Ajouter un article…' : `Ajouter à ${l.name}…`) : 'Ajouter…';
   $('#opts-todo').hidden = kind !== 'todo';
   $('#opts-shop').hidden = kind !== 'shop';
-  $('#opts-wish').hidden = kind !== 'wish';
   if (kind === 'shop') {
     const typed = $('#new-task').value.trim();
     const guess = typed ? AISLES.find(a => a[0] === guessAisle(typed)) : null;
     $('#aisle-input').innerHTML = `<option value="auto">Auto${guess ? ` (${guess[1]} ${esc(guess[2])})` : ''}</option>` + AISLES.map(([k, e, lab]) => `<option value="${k}" ${S.draft.aisle === k ? 'selected' : ''}>${e} ${esc(lab)}</option>`).join('');
     if (S.draft.aisle === 'auto') $('#aisle-input').value = 'auto';
   }
-  if (kind === 'wish') $('#cat-seg').innerHTML = segHTML(S.draft.cat, [WISH_CATS[WISH_CATS.length - 1], ...WISH_CATS.slice(0, -1)].map(([k, e, lab]) => [k, `${e} ${lab}`]));
   const { due, time } = S.draft;
   $('#due-label').textContent = due ? dueLabel(due) : 'Date';
   $('#due-input').value = due;
@@ -513,11 +504,8 @@ function addTask(text) {
     t.due = S.draft.due || '';
     t.remindTime = S.draft.due ? (S.draft.time || '') : '';
     t.for = S.draft.for || 'both';
-  } else if (kind === 'shop') {
-    t.aisle = S.draft.aisle !== 'auto' ? S.draft.aisle : guessAisle(text);
   } else {
-    t.cat = S.draft.cat || 'autre';
-    t.url = '';
+    t.aisle = S.draft.aisle !== 'auto' ? S.draft.aisle : guessAisle(text);
   }
   addDoc(collection(db, 'tasks'), t).catch(fail);
   notifyPartner('task');
@@ -565,13 +553,10 @@ function openEditTask(t) {
       <label class="field"><span>Répéter</span><select id="e-repeat">${optionsHTML(TASK_REPEAT, t.repeat || '')}</select></label>
       <div class="field seg-field"><span>Pour</span><div class="seg" id="e-for"></div></div>`,
     shop: `<label class="field"><span>Rayon</span><select id="e-aisle">${AISLES.map(([k, e, lab]) => `<option value="${k}" ${aisleOf(t) === k ? 'selected' : ''}>${e} ${esc(lab)}</option>`).join('')}</select></label>`,
-    wish: `
-      <label class="field"><span>Catégorie</span><select id="e-cat">${WISH_CATS.map(([k, e, lab]) => `<option value="${k}" ${(t.cat || 'autre') === k ? 'selected' : ''}>${e} ${esc(lab)}</option>`).join('')}</select></label>
-      <label class="field"><span>Lien (facultatif)</span><input id="e-url" inputmode="url" maxlength="300" value="${esc(t.url || '')}" placeholder="Site du resto, bande-annonce…"></label>`,
   }[kind];
   openSheet(`
     <h2 tabindex="-1" autofocus>Modifier</h2>
-    <label class="field"><span>${kind === 'shop' ? 'Article' : kind === 'wish' ? 'Envie' : 'Tâche'}</span><input id="e-text" maxlength="200" value="${esc(t.text)}"></label>
+    <label class="field"><span>${kind === 'shop' ? 'Article' : 'Tâche'}</span><input id="e-text" maxlength="200" value="${esc(t.text)}"></label>
     <label class="field"><span>Liste</span><select id="e-list">${listOpts}</select></label>
     ${fields}
     <p class="muted small">Ajouté par ${esc(nameOf(t.by))} · ${esc(ago(t.ts))}</p>
@@ -592,13 +577,8 @@ function openEditTask(t) {
         const repeat = $('#e-repeat', body).value;
         if ((remindTime || repeat) && !due) due = today(); // un rappel ou une répétition a besoin d'une date
         Object.assign(data, { due, remindTime, repeat, for: forValue });
-      } else if (kind === 'shop') {
-        data.aisle = $('#e-aisle', body).value;
       } else {
-        const raw = $('#e-url', body).value.trim();
-        const url = safeUrl(raw);
-        if (raw && !url) { toast('Ce lien n’est pas valide.'); return; }
-        Object.assign(data, { cat: $('#e-cat', body).value, url });
+        data.aisle = $('#e-aisle', body).value;
       }
       // Déplacement vers une liste de courses : on devine le rayon.
       if (list !== t.list && listKind(listOf(list)) === 'shop' && !data.aisle) data.aisle = guessAisle(text);
@@ -609,6 +589,18 @@ function openEditTask(t) {
 }
 
 /* ───────── Listes ───────── */
+// Ancienne liste « Envies & sorties » (fonction retirée) : on la supprime avec ses envies.
+function removeWishList() {
+  if (!S.lists.some(l => l.id === 'sorties')) return;
+  const ids = S.tasks.filter(t => t.list === 'sorties').map(t => t.id);
+  for (let i = 0; i < ids.length; i += 400) {
+    const batch = writeBatch(db);
+    ids.slice(i, i + 400).forEach(id => batch.delete(doc(db, 'tasks', id)));
+    batch.commit().catch(() => {});
+  }
+  deleteDoc(doc(db, 'lists', 'sorties')).catch(() => {});
+}
+
 function seedLists() {
   const batch = writeBatch(db);
   DEFAULT_LISTS.forEach(({ id, ...data }) => batch.set(doc(db, 'lists', id), data, { merge: true }));
@@ -656,45 +648,6 @@ function openListSheet(list) {
         closeSheet();
       }
     });
-  });
-}
-
-/* ───────── Tirage au sort (listes d'envies) ───────── */
-function openDraw(list) {
-  let cat = 'all', last = null, pick = null;
-  const pool = () => S.tasks.filter(t => t.list === list.id && !t.done && (cat === 'all' || (t.cat || 'autre') === cat));
-  const cats = [['all', 'Tout'], ...WISH_CATS.filter(([k]) => S.tasks.some(t => t.list === list.id && !t.done && (t.cat || 'autre') === k)).map(([k, e, lab]) => [k, `${e} ${lab}`])];
-  const draw = () => {
-    const p = pool();
-    if (!p.length) { pick = null; return; }
-    const choices = p.length > 1 ? p.filter(t => t.id !== last) : p;
-    pick = choices[Math.floor(Math.random() * choices.length)];
-    last = pick.id;
-  };
-  draw();
-  openSheet(`
-    <h2 tabindex="-1" autofocus>🎲 Tirage au sort</h2>
-    <div class="seg seg-wrap" id="d-cat">${segHTML(cat, cats)}</div>
-    <div class="draw-card" id="d-card"></div>
-    <div class="sheet-actions">
-      <button class="btn" data-act="again">Relancer</button>
-      <button class="btn primary" data-act="go">On fait ça !</button>
-    </div>`, body => {
-    const show = () => {
-      const card = $('#d-card', body);
-      card.classList.remove('spin'); void card.offsetWidth; card.classList.add('spin');
-      if (!pick) { card.innerHTML = '<p class="muted">Rien dans cette catégorie.</p>'; return; }
-      const c = WISH_CATS.find(x => x[0] === (pick.cat || 'autre'));
-      const url = safeUrl(pick.url);
-      card.innerHTML = `<span class="draw-emoji">${c[1]}</span><span class="draw-text">${esc(pick.text)}</span><span class="muted small">${esc(c[2])} · proposé par ${esc(nameOf(pick.by))}</span>${url ? `<a class="btn small" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Voir le lien ↗</a>` : ''}`;
-    };
-    show();
-    $('#d-cat', body).addEventListener('click', e => {
-      const b = e.target.closest('[data-for]'); if (!b) return;
-      cat = b.dataset.for; $('#d-cat', body).innerHTML = segHTML(cat, cats); draw(); show();
-    });
-    $('[data-act="again"]', body).onclick = () => { draw(); show(); };
-    $('[data-act="go"]', body).onclick = () => { if (pick) { toggleTask(pick); toast('Bonne sortie ! 🎉'); } closeSheet(); };
   });
 }
 
@@ -1124,7 +1077,7 @@ function afterSnapshot(name, snap) {
   if (!snap.metadata.fromCache) S.loaded[name] = true;
   renderAll();
   queueReconcile();
-  if (allLoaded() && !S.linkHandled) { S.linkHandled = true; handleDeepLink(); purgeOldLog(); }
+  if (allLoaded() && !S.linkHandled) { S.linkHandled = true; handleDeepLink(); purgeOldLog(); removeWishList(); }
 }
 
 function startSession(user) {
@@ -1178,7 +1131,7 @@ function stopSession() {
   Object.assign(S, {
     unsubs: [], me: null, users: {}, lists: [], tasks: [], events: [], sched: [], config: {}, gstatus: null, localDirty: {}, loaded: {},
     seeded: false, onboardingShown: false, linkHandled: false, showDone: false,
-    draft: { due: '', time: '', for: 'both', aisle: 'auto', cat: 'autre' },
+    draft: { due: '', time: '', for: 'both', aisle: 'auto' },
   });
   closeSheet();
 }
@@ -1212,10 +1165,8 @@ function bindUI() {
   });
   $('#denied-logout').addEventListener('click', logout);
   $('#open-settings').addEventListener('click', openSettings);
-  $('#draw').addEventListener('click', () => { const l = listOf(S.current); if (l) openDraw(l); });
   $('#aisle-input').addEventListener('change', e => { S.draft.aisle = e.target.value; });
   $('#new-task').addEventListener('input', () => { if (listKind(listOf(S.current)) === 'shop' && S.draft.aisle === 'auto') renderComposer(); });
-  $('#cat-seg').addEventListener('click', e => { const b = e.target.closest('[data-for]'); if (!b) return; S.draft.cat = b.dataset.for; renderComposer(); });
   $('#views').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) setView(b.dataset.view); });
 
   // Listes
@@ -1284,7 +1235,7 @@ function bindUI() {
 function configured() { return firebaseConfig?.apiKey && !String(firebaseConfig.apiKey).startsWith('REMPLACER'); }
 
 /* Effet de lumière : un halo part de l'endroit touché sur les boutons */
-const LIT = '.btn, .send, .chip, .views button, .seg button, .draw-btn, .opt-pill, .today-btn, .icon-btn';
+const LIT = '.btn, .send, .chip, .views button, .seg button, .opt-pill, .today-btn, .icon-btn';
 function lightUp(e) {
   const el = e.target.closest?.(LIT);
   if (!el || el.disabled) return;

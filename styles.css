@@ -68,6 +68,7 @@
 * { box-sizing: border-box; }
 html, body {
   margin: 0;
+  overflow-x: clip;
   background: var(--bg);
   color: var(--ink);
   font: 16px/1.4 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -268,7 +269,9 @@ dialog.sheet {
   width: 100%; max-width: 560px; max-height: 92dvh;
   background: var(--dusk-h) top / 100% 5px no-repeat, var(--surface); color: var(--ink);
   border-radius: 24px 24px 0 0;
-  overflow-y: auto;
+  overflow-y: auto; overflow-x: hidden;
+  overscroll-behavior: contain;
+  touch-action: pan-y;          /* le panneau ne glisse ni à gauche ni à droite, et ne zoome pas */
 }
 dialog.sheet[open] { animation: rise .22s ease-out; }
 @keyframes rise { from { transform: translateY(24px); opacity: .6; } }
@@ -396,23 +399,9 @@ dialog.sheet::backdrop { background: rgba(24, 20, 60, .5); }
 .group-head:first-child { margin-top: 0; }
 .group-head span { font-weight: 500; opacity: .7; }
 .task { position: relative; }
-.task-link { flex: none; align-self: center; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--surface-2); color: var(--ink); text-decoration: none; font-weight: 600; }
 .opt-select { height: 34px; border-radius: 999px; border: 0; background: var(--surface-2); color: var(--ink); padding: 0 12px; font-size: 13px; font-weight: 500; max-width: 100%; }
-.draw-btn { height: 34px; padding: 0 12px; border-radius: 999px; background: rgba(255, 255, 255, .22); color: #fff; font-size: 13px; font-weight: 600; margin-left: auto; margin-right: 2px; flex: none; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .list-head h2 { min-width: 0; }
 
-/* Tirage au sort */
-.seg-wrap { display: flex; flex-wrap: wrap; border-radius: 16px; }
-.draw-card {
-  min-height: 170px; border-radius: 20px; padding: 22px 18px;
-  background: var(--grain), var(--glow), var(--dusk); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center;
-}
-.draw-card .muted { color: rgba(255, 255, 255, .85); }
-.draw-card.spin { animation: drawpop .45s cubic-bezier(.2, 1.4, .4, 1); }
-@keyframes drawpop { 0% { transform: scale(.85) rotate(-3deg); opacity: .3; } 100% { transform: none; opacity: 1; } }
-.draw-emoji { font-size: 40px; line-height: 1; }
-.draw-text { font-family: var(--display); font-style: italic; font-weight: 500; font-size: 26px; overflow-wrap: anywhere; text-shadow: 0 1px 12px rgba(30, 20, 80, .25); }
-.draw-card .btn.small { display: inline-flex; align-items: center; text-decoration: none; color: var(--ink); background: var(--surface); margin-top: 4px; }
 
 .switch-row .small { font-weight: 400; }
 
@@ -448,23 +437,15 @@ a.btn { display: flex; align-items: center; justify-content: center; text-decora
 .tw.d2 { animation-delay: -1.8s; animation-duration: 3.1s; }
 .tw.d3 { animation-delay: -2.6s; animation-duration: 4.8s; }
 @keyframes twinkle { 0%, 100% { transform: scale(1) rotate(0); opacity: 1; } 45% { transform: scale(.55) rotate(18deg); opacity: .45; } 60% { transform: scale(1.12) rotate(0); opacity: 1; } }
-.draw-card { position: relative; overflow: hidden; isolation: isolate; }
-.draw-card::before {
-  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 170'><g fill='white'><path d='M40 22 42.5 29.5 50 32 42.5 34.5 40 42 37.5 34.5 30 32 37.5 29.5Z'/><path d='M262 30 263.5 34.5 268 36 263.5 37.5 262 42 260.5 37.5 256 36 260.5 34.5Z' opacity='.85'/><path d='M248 128 250 134 256 136 250 138 248 144 246 138 240 136 246 134Z' opacity='.8'/><path d='M60 132 61.2 135.8 65 137 61.2 138.2 60 142 58.8 138.2 55 137 58.8 135.8Z' opacity='.7'/><circle cx='210' cy='20' r='1.5' opacity='.8'/><circle cx='96' cy='58' r='1.2' opacity='.7'/><circle cx='286' cy='96' r='1.2' opacity='.7'/></g></svg>") center / cover no-repeat;
-  animation: drift 6s ease-in-out infinite alternate;
-}
-@keyframes drift { from { opacity: .65; transform: scale(1); } to { opacity: 1; transform: scale(1.04); } }
 
 /* ───────── Boutons : brillance et lumière ───────── */
-.btn, .send, .chip, .views button, .seg button, .draw-btn, .opt-pill, .today-btn, .icon-btn {
+.btn, .send, .chip, .views button, .seg button, .opt-pill, .today-btn, .icon-btn {
   position: relative; overflow: hidden; isolation: isolate;
   transition: transform .18s cubic-bezier(.3, 1.6, .5, 1), box-shadow .2s, filter .2s;
 }
-.btn:active, .send:active, .chip:active, .views button:active, .seg button:active, .draw-btn:active, .opt-pill:active, .today-btn:active { transform: scale(.96); }
+.btn:active, .send:active, .chip:active, .views button:active, .seg button:active, .opt-pill:active, .today-btn:active { transform: scale(.96); }
 /* Halo de lumière qui part du doigt (position posée par app.js) */
-.btn::before, .send::before, .chip::before, .views button::before, .seg button::before, .draw-btn::before, .opt-pill::before, .today-btn::before, .icon-btn::before {
+.btn::before, .send::before, .chip::before, .views button::before, .seg button::before, .opt-pill::before, .today-btn::before, .icon-btn::before {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
   background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), var(--glow-c) 0, transparent 65%);
   opacity: 0; transition: opacity .6s ease-out;
@@ -482,7 +463,7 @@ a.btn { display: flex; align-items: center; justify-content: center; text-decora
 .chip.is-on { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 4px 12px -4px rgba(79, 70, 200, .5); }
 @media (prefers-color-scheme: dark) { .btn.primary, .send, .chip.is-on { text-shadow: none; } }
 /* Reflet qui balaie le bouton */
-.btn.primary::after, .send::after, .chip.is-on::after, .draw-btn::after {
+.btn.primary::after, .send::after, .chip.is-on::after {
   content: ""; position: absolute; inset: -2px; pointer-events: none;
   background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .6) 48%, rgba(255, 255, 255, .15) 54%, transparent 66%);
   transform: translateX(-130%);
@@ -504,7 +485,6 @@ a.btn { display: flex; align-items: center; justify-content: center; text-decora
   .btn:not(.primary):not(.danger), .seg button.is-on, .views button.is-on, .today-btn { background-image: linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, 0) 60%); }
   .views button.is-on, .seg button.is-on { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 1px 3px rgba(0, 0, 0, .3); }
 }
-.draw-btn { --glow-c: rgba(255, 255, 255, .5); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45); }
 .list-head .icon-btn { --glow-c: rgba(255, 255, 255, .4); }
 .chip-count { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35); }
 
@@ -513,5 +493,15 @@ a.btn { display: flex; align-items: center; justify-content: center; text-decora
 @keyframes tick { from { transform: scale(.6); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .tw, .draw-card::before, .btn.primary::after, .send::after, .chip.is-on::after, .draw-btn::after, #add-event::after, #login-btn::after, .task.is-done .check { animation: none !important; }
+  .tw, .btn.primary::after, .send::after, .chip.is-on::after, #add-event::after, #login-btn::after, .task.is-done .check { animation: none !important; }
 }
+
+
+/* Champs date et heure : sur iPhone, ils imposent leur propre largeur et font déborder les panneaux */
+.sheet-inner, .sheet-inner > *, .field, .row-2 > * { min-width: 0; }
+input[type="date"], input[type="time"] {
+  -webkit-appearance: none; appearance: none;
+  display: block; min-width: 0; max-width: 100%; text-align: left;
+}
+input[type="date"]::-webkit-date-and-time-value, input[type="time"]::-webkit-date-and-time-value { text-align: left; }
+.field input, .field select, .composer-row input { font-size: 16px; }   /* sous 16 px, l'iPhone zoome sur le champ */
