@@ -533,7 +533,6 @@ input[type="date"]::-webkit-date-and-time-value, input[type="time"]::-webkit-dat
 .tl-cols { position: relative; flex: 1; display: grid; min-width: 0;
   background-image: repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 48px); }
 .tl-n1 { grid-template-columns: 1fr; }
-.tl-n7 { grid-template-columns: repeat(7, minmax(0, 1fr)); }
 .tl-col { position: relative; border-left: 1px solid var(--line); cursor: pointer; }
 .tl-col.is-today { background: color-mix(in srgb, var(--accent) 5%, transparent); }
 .tl-ev {
@@ -550,21 +549,33 @@ input[type="date"]::-webkit-date-and-time-value, input[type="time"]::-webkit-dat
 .tl-ev-time { color: var(--ink-2); font-size: 11px; font-variant-numeric: tabular-nums; }
 .tl-ev.is-short { flex-direction: row; align-items: center; padding-top: 0; padding-bottom: 0; }
 .tl-ev.is-short .tl-ev-title { -webkit-line-clamp: 1; white-space: nowrap; }
-.tl-n7 .tl-ev { padding: 2px 3px; font-size: 10.5px; border-left-width: 2px; border-radius: 5px; }
-.tl-n7 .tl-ev-time { display: none; }
 .tl-now { position: absolute; left: -1px; right: 0; z-index: 2; height: 2px; background: var(--danger); pointer-events: none; }
 .tl-now::before { content: ""; position: absolute; left: -4px; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--danger); }
 
-/* Semaine */
-.wk-head, .wk-allday { display: grid; grid-template-columns: 44px repeat(7, minmax(0, 1fr)); align-items: start; }
-.wk-head { margin: 12px 0 6px; }
-.wk-day { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; border-radius: 12px; }
+/* Semaine : liste des 7 jours */
+.wk-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.wk-row { display: flex; gap: 12px; padding: 10px 12px; min-height: 58px; }
+.wk-row + .wk-row { border-top: 1px solid var(--line); }
+.wk-row.is-today { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.wk-date { flex: none; width: 44px; display: flex; flex-direction: column; align-items: center; gap: 2px; align-self: flex-start; }
 .wk-wd { font-size: 11px; font-weight: 600; color: var(--ink-2); }
 .wk-num { width: 30px; height: 30px; line-height: 30px; border-radius: 50%; text-align: center; font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .is-today .wk-num { color: var(--accent); font-weight: 700; }
 .is-sel .wk-num { background: var(--grain), var(--glow), var(--dusk); color: #fff; font-weight: 600; }
-.wk-allday { gap: 2px 0; margin-bottom: 6px; }
-.wk-ad-col { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 0 1px; }
+.wk-items { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+.wk-ev {
+  display: flex; align-items: baseline; gap: 8px; width: 100%; text-align: left; min-width: 0;
+  padding: 6px 10px; border-radius: 10px; border-left: 3px solid var(--ink-2); background: var(--surface-2);
+}
+.wk-ev.p-a { background: var(--a-soft); border-left-color: var(--a); }
+.wk-ev.p-b { background: var(--b-soft); border-left-color: var(--b); }
+.wk-ev.p-both { background: linear-gradient(90deg, var(--a-soft), var(--b-soft)); border-left-color: var(--a); }
+.wk-ev-time { flex: none; font-size: 12px; font-weight: 600; color: var(--ink-2); font-variant-numeric: tabular-nums; min-width: 42px; }
+.wk-ev-title { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wk-tasks { align-self: flex-start; font-size: 12px; font-weight: 600; color: var(--accent); padding: 2px 4px; }
+.wk-none { font-size: 13px; color: var(--ink-2); font-style: italic; }
+
+/* Pastilles « toute la journée » (vue Jour) */
 .ad-chip {
   display: block; min-width: 0; width: 100%; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   padding: 3px 6px; border-radius: 6px; font-size: 11px; font-weight: 600;
@@ -573,7 +584,6 @@ input[type="date"]::-webkit-date-and-time-value, input[type="time"]::-webkit-dat
 .ad-chip.p-a { background: var(--a-soft); border-left-color: var(--a); }
 .ad-chip.p-b { background: var(--b-soft); border-left-color: var(--b); }
 .ad-chip.p-both { background: linear-gradient(90deg, var(--a-soft), var(--b-soft)); border-left-color: var(--a); }
-.wk-ad-col .ad-chip { padding: 2px 3px; font-size: 10px; border-left-width: 2px; }
 
 /* Jour */
 .strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin: 12px 0 0; }

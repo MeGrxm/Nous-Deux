@@ -689,7 +689,7 @@ function purgeOldLog() {
 /* ───────── Vue Agenda ───────── */
 /* ───────── Agenda : vues Mois / Semaine / Jour ───────── */
 const CAL_MODES = ['month', 'week', 'day'];
-const HOUR_PX = 48;                       // hauteur d'une heure dans les vues Semaine et Jour
+const HOUR_PX = 48;                       // hauteur d'une heure dans la vue Jour
 const WD_SHORT = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 function weekStart(d) { return addDays(d, -((dow(d) + 6) % 7)); }
 function toMin(t) { const [h, m] = String(t).split(':').map(Number); return h * 60 + (m || 0); }
@@ -834,19 +834,23 @@ function renderAgenda() {
   else renderMonth();
 }
 
+// Semaine : la liste des 7 jours, sans grille horaire.
 function renderWeek() {
   const a = weekStart(S.cal.sel), t0 = today();
   const days = Array.from({ length: 7 }, (_, i) => addDays(a, i));
-  $('#wk-head').innerHTML = '<span class="wk-gutter"></span>' + days.map((d, i) =>
-    `<button class="wk-day ${d === t0 ? 'is-today' : ''} ${d === S.cal.sel ? 'is-sel' : ''}" data-goto-day="${d}" aria-label="${esc(longDay(d))}"><span class="wk-wd">${WD_SHORT[i]}</span><span class="wk-num">${Number(d.slice(8))}</span></button>`).join('');
-  const ad = days.map(d => `<div class="wk-ad-col">${allDayHTML(d, true)}</div>`).join('');
-  $('#wk-allday').innerHTML = `<span class="wk-gutter"></span>${ad}`;
-  $('#wk-allday').hidden = !days.some(d => eventsOn(d).some(ev => segmentOn(ev, d).allDay));
-  $('#wk-tl').innerHTML = timelineHTML(days);
-  placeTimeline($('#wk-tl'));
-  const sc = $('#wk-scroll');
-  sizeScroller(sc);
-  scrollTimeline(sc, `week:${a}`, days);
+  $('#wk-list').innerHTML = days.map(d => {
+    const wd = capFirst(parseYmd(d).toLocaleDateString('fr-FR', { weekday: 'short' }));
+    const evs = eventsOn(d).map(ev => {
+      const seg = segmentOn(ev, d);
+      const time = seg.allDay ? 'Journée' : (isMulti(ev) && d !== ev.date ? `→ ${ev.end || ''}` : ev.start);
+      return `<button class="wk-ev ${toneClass(ev.who)}" data-event="${esc(ev.id)}" data-day="${d}"><span class="wk-ev-time">${esc(time)}</span><span class="wk-ev-title">${esc(ev.title)}</span></button>`;
+    }).join('');
+    const nTasks = S.tasks.filter(t => !t.done && t.due === d && visibleFor(t.for)).length;
+    const tasks = nTasks ? `<button class="wk-tasks" data-goto-day="${d}">☐ ${plural(nTasks, 'tâche', 'tâches')}</button>` : '';
+    return `<li class="wk-row ${d === t0 ? 'is-today' : ''} ${d === S.cal.sel ? 'is-sel' : ''}">`
+      + `<button class="wk-date" data-goto-day="${d}" aria-label="${esc(longDay(d))}"><span class="wk-wd">${esc(wd)}</span><span class="wk-num">${Number(d.slice(8))}</span></button>`
+      + `<div class="wk-items">${evs}${tasks}${evs || tasks ? '' : '<span class="wk-none">Rien de prévu</span>'}</div></li>`;
+  }).join('');
 }
 
 function renderDayView() {
@@ -1486,11 +1490,11 @@ function bindUI() {
   });
   $('#cal-mode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b) calSetMode(b.dataset.mode); });
   // Semaine : toucher un jour ouvre la vue Jour (zoom depuis ce jour)
-  $('#wk-head').addEventListener('click', e => {
+  $('#wk-list').addEventListener('click', e => {
     const b = e.target.closest('[data-goto-day]'); if (!b) return;
     const r = b.getBoundingClientRect();
     S.cal.sel = b.dataset.gotoDay;
-    calSetMode('day', { x: r.left + r.width / 2, y: r.top + r.height });
+    calSetMode('day', { x: r.left + r.width / 2, y: r.top + r.height / 2 });
   });
   // Jour : choisir un autre jour dans le bandeau de la semaine
   $('#dv-strip').addEventListener('click', e => {
@@ -1515,7 +1519,7 @@ function bindUI() {
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6 && Date.now() - sw.at < 700) calStep(dx < 0 ? 1 : -1);
     sw = null;
   }, { passive: true });
-  window.addEventListener('resize', () => { if (S.view === 'agenda' && S.cal.mode !== 'month') { const sc = $(S.cal.mode === 'week' ? '#wk-scroll' : '#dv-scroll'); if (sc) sizeScroller(sc); } });
+  window.addEventListener('resize', () => { if (S.view === 'agenda' && S.cal.mode === 'day') sizeScroller($('#dv-scroll')); });
   $('#cal-filter').addEventListener('click', e => { const b = e.target.closest('[data-for]'); if (!b) return; S.cal.filter = b.dataset.for; renderAgenda(); });
   $('#cal-grid').addEventListener('click', e => {
     const b = e.target.closest('[data-day]'); if (!b) return;
