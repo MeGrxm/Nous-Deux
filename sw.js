@@ -1,6 +1,6 @@
 // Service worker : permet l'installation sur l'écran d'accueil
 // et l'ouverture de l'appli même sans réseau.
-const CACHE = 'nousdeux-v12';
+const CACHE = 'nousdeux-v16';
 const SHELL = [
   './', 'index.html', 'styles.css', 'app.js', 'rayons.js', 'config.js', 'manifest.webmanifest',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'

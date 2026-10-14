@@ -76,6 +76,8 @@ Chacun a son propre sujet : vous êtes prévenu des ajouts de l'autre, jamais de
 L'agenda est intégré à l'appli (onglet **Agenda**). Chacun choisit sa couleur dans les **Réglages**. Les événements « Nous deux » portent vos deux couleurs.
 
 - **Ajouter un événement** : titre, pour qui, date, horaires (une fin plus tôt que le début, par exemple 22:00 → 06:00, signifie que l'événement finit le lendemain), rappel, répétition et note.
+- **Mois, Semaine ou Jour** : choisissez l'affichage en haut de l'agenda. En Semaine et en Jour, les événements sont placés sur une grille horaire (la ligne rouge marque l'heure actuelle) ; touchez un créneau vide pour créer un événement à cette heure. Balayez vers la gauche ou la droite pour passer à la période suivante ou précédente.
+- **Sur plusieurs jours** (vacances, week-end…) : remplissez « Du » et « Au ». L'événement apparaît chaque jour, avec un seul rappel au début. Un événement sur plusieurs jours ne se répète pas.
 - **Répétitions** : chaque jour, du lundi au vendredi, chaque semaine, toutes les 2 semaines ou chaque mois, avec une date de fin facultative. Pour une série, vous pouvez supprimer un seul jour ou toute la série.
 - **Filtre** « Tous / Moi / l'autre » pour voir l'emploi du temps d'une seule personne.
 - Les **tâches avec une date** apparaissent aussi sous le jour concerné.

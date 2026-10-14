@@ -74,10 +74,9 @@ service cloud.firestore {
       allow write: if isRobot();
     }
 
-    // Journal des tâches cochées (pour le bilan) : chacun n'écrit que ses propres lignes.
+    // Ancien journal du « Bilan » (fonction retirée) : on peut seulement l'effacer.
     match /log/{id} {
       allow read, delete: if isCouple();
-      allow create: if isCouple() && request.resource.data.by == request.auth.uid;
     }
   }
 }

@@ -137,12 +137,35 @@
 
   <!-- Vue Agenda -->
   <main class="main" id="agenda" data-only="agenda" hidden>
+    <div class="cal-modes" id="cal-mode" role="tablist" aria-label="Affichage">
+      <button type="button" data-mode="month" role="tab">Mois</button>
+      <button type="button" data-mode="week" role="tab">Semaine</button>
+      <button type="button" data-mode="day" role="tab">Jour</button>
+    </div>
     <div class="seg cal-filter" id="cal-filter"></div>
-    <div class="cal" id="cal-grid"></div>
-    <h3 class="day-title" id="day-title"></h3>
-    <ul class="events" id="day-events"></ul>
-    <p class="day-empty muted" id="day-empty" hidden>Rien de prévu ce jour-là.</p>
-    <div id="day-tasks"></div>
+    <div class="cal-stage" id="cal-stage">
+      <!-- Vue Mois -->
+      <section id="view-month">
+        <div class="cal" id="cal-grid"></div>
+        <h3 class="day-title" id="day-title"></h3>
+        <ul class="events" id="day-events"></ul>
+        <p class="day-empty muted" id="day-empty" hidden>Rien de prévu ce jour-là.</p>
+        <div id="day-tasks"></div>
+      </section>
+      <!-- Vue Semaine -->
+      <section id="view-week" hidden>
+        <div class="wk-head" id="wk-head"></div>
+        <div class="wk-allday" id="wk-allday"></div>
+        <div class="tl-scroll" id="wk-scroll"><div class="tl" id="wk-tl"></div></div>
+      </section>
+      <!-- Vue Jour -->
+      <section id="view-day" hidden>
+        <div class="strip" id="dv-strip"></div>
+        <h3 class="day-title dv-title" id="dv-title"></h3>
+        <div class="dv-allday" id="dv-allday"></div>
+        <div class="tl-scroll" id="dv-scroll"><div class="tl" id="dv-tl"></div></div>
+      </section>
+    </div>
   </main>
 
   <form id="composer" class="composer" autocomplete="off" data-only="lists">
